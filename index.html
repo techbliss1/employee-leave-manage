@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LeaveFlow – Employee Leave Management</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">🌿</span>
+      <div>
+        <h1>LeaveFlow</h1>
+        <p>Employee Leave Management</p>
+      </div>
+    </div>
+    <nav class="role-switch" role="tablist" aria-label="Select view">
+      <button class="role-btn active" data-view="employee" role="tab" aria-selected="true">👤 Employee</button>
+      <button class="role-btn" data-view="manager" role="tab" aria-selected="false">📊 Manager Dashboard</button>
+    </nav>
+    <button id="resetDemo" class="btn btn-ghost" title="Restore the sample demonstration data">↺ Reset demo data</button>
+  </header>
+
+  <main>
+    <!-- ================= EMPLOYEE VIEW ================= -->
+    <section id="employeeView" class="view active">
+      <div class="employee-bar card">
+        <div class="emp-identity">
+          <div id="empAvatar" class="avatar">--</div>
+          <div>
+            <label for="employeeSelect" class="muted small">Signed in as</label>
+            <select id="employeeSelect"></select>
+            <p id="empMeta" class="muted small"></p>
+          </div>
+        </div>
+      </div>
+
+      <h2 class="section-title">Leave Balances</h2>
+      <div id="balanceGrid" class="balance-grid"></div>
+
+      <div class="two-col">
+        <div class="card">
+          <h2 class="card-title">📝 Apply for Leave</h2>
+          <form id="leaveForm" novalidate>
+            <div class="field">
+              <label for="leaveType">Leave type</label>
+              <select id="leaveType" required></select>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label for="startDate">Start date</label>
+                <input type="date" id="startDate" required />
+              </div>
+              <div class="field">
+                <label for="endDate">End date</label>
+                <input type="date" id="endDate" required />
+              </div>
+            </div>
+            <div id="dayPreview" class="day-preview">Select dates to calculate working days.</div>
+            <div class="field">
+              <label for="reason">Reason</label>
+              <textarea id="reason" rows="3" maxlength="300" placeholder="Briefly describe the reason for your leave" required></textarea>
+            </div>
+            <p id="formError" class="form-error" role="alert"></p>
+            <button type="submit" class="btn btn-primary btn-block">Submit Request</button>
+          </form>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h2 class="card-title">📅 My Leave History</h2>
+            <select id="historyFilter" aria-label="Filter history by status">
+              <option value="All">All statuses</option>
+              <option value="Pending">Pending</option>
+              <option value="Approved">Approved</option>
+              <option value="Rejected">Rejected</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+          </div>
+          <div id="historyList" class="history-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= MANAGER VIEW ================= -->
+    <section id="managerView" class="view">
+      <h2 class="section-title">Leave Statistics</h2>
+      <div id="statsGrid" class="stats-grid"></div>
+
+      <div class="two-col">
+        <div class="card">
+          <h2 class="card-title">Approved days by leave type</h2>
+          <div id="typeChart" class="bar-chart"></div>
+        </div>
+        <div class="card">
+          <h2 class="card-title">Requests by department</h2>
+          <div id="deptChart" class="bar-chart"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head wrap">
+          <h2 class="card-title">📋 Leave Requests</h2>
+          <div class="filters">
+            <div id="statusFilters" class="chip-group" role="group" aria-label="Filter by status">
+              <button class="chip active" data-status="All">All</button>
+              <button class="chip" data-status="Pending">Pending</button>
+              <button class="chip" data-status="Approved">Approved</button>
+              <button class="chip" data-status="Rejected">Rejected</button>
+              <button class="chip" data-status="Cancelled">Cancelled</button>
+            </div>
+            <select id="typeFilter" aria-label="Filter by leave type"></select>
+            <input id="searchBox" type="search" placeholder="Search employee or reason…" aria-label="Search requests" />
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="req-table">
+            <thead>
+              <tr>
+                <th>Employee</th>
+                <th>Type</th>
+                <th>Dates</th>
+                <th>Days</th>
+                <th>Reason</th>
+                <th>Applied</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="requestBody"></tbody>
+          </table>
+          <p id="emptyRequests" class="empty hidden">No requests match the current filters.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Decision modal -->
+  <div id="modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-box">
+      <h3 id="modalTitle">Review request</h3>
+      <div id="modalDetails" class="modal-details"></div>
+      <label for="managerComment">Comment (optional)</label>
+      <textarea id="managerComment" rows="3" maxlength="200" placeholder="Add a note for the employee"></textarea>
+      <div class="modal-actions">
+        <button id="modalCancel" class="btn btn-ghost">Cancel</button>
+        <button id="modalConfirm" class="btn btn-primary">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+  <footer class="footer">LeaveFlow demo · Data is stored in your browser's localStorage</footer>
+
+  <script src="js/data.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
